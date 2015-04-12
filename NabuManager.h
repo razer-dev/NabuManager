@@ -17,7 +17,7 @@
 
 	3. Create an URL scheme callback in the "URL Types" section from your Info.plist (this is the way your app communicates with the Nabu Utility)
 
-    4. Just copy and paste the following code in the AppDelegate.m file (this way you override the following method to handle the way you app opens URLs)
+    4. Import NabuManager.h in either AppDelegate.h or AppDelegate.m and after that, just copy and paste the following code in the AppDelegate.m file (this way you override the following method to handle the way you app opens URLs)
 
         - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
             [[NabuDataManager sharedDataManager] validateURLResponse:url withBlock:^(NSDictionary *callback) {}];
@@ -25,9 +25,7 @@
             return true;
         }
 
-    5. Import the NabuManager.h in your ViewController
-
-        #import "NabuManager.h"
+    5. Import the NabuManager.h in your ViewController class
 
 	6. You now have all the Nabu's features at your fingertips with just one class. NabuManager is a singleton, only one instance lives at a time, so you can access it's public properties and methods this way:
 
