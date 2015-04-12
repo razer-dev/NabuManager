@@ -16,7 +16,7 @@
     2. Follow the steps listed here: http://developer.razerzone.com/nabu/guides/develop-ios/ to set up your Xcode project
 
 	3. Create an URL scheme callback in the "URL Types" section from your Info.plist (this is the way your app communicates with the Nabu Utility)
- 
+
     4. Just copy and paste the following code in the AppDelegate.m file (this way you override the following method to handle the way you app opens URLs)
 
         - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
@@ -30,7 +30,7 @@
         #import "NabuManager.h"
 
 	6. You now have all the Nabu's features at your fingertips with just one class. NabuManager is a singleton, only one instance lives at a time, so you can access it's public properties and methods this way:
- 
+
 		[[NabuManager sharedNabuManager] method1];
 		[[NabuManager sharedNabuManager] method2: 3]; // For a method that takes one argument
 
@@ -38,15 +38,12 @@
 
     7. For every method's description please check it's documentation by pressing the "alt" key and clicking on that method, or just check the header.
 
+        WARNING: SOME METHODS COULD TAKE MORE TIME TO BE EXECUTED DUE TO THE INTERACTION WITH THE NABU UTILITY, THAT'S WHY IT IS RECOMMENDED TO CALL THE METHODS ASYNCHRONOUSLY, LIKE THIS:
 
-
-    
-    WARNING: SOME METHODS COULD TAKE MORE TIME TO BE EXECUTED DUE TO THE INTERACTION WITH THE NABU UTILITY, THAT'S WHY IT IS RECOMMENDED TO CALL THE METHODS ASYNCHRONOUSLY, LIKE THIS:
-
-    dispatch_queue_t backgroundOperationQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0);
-    dispatch_async(operationQueue, ^{
-        [[NabuManager sharedNabuManager] sendNotificationWithMessage:@"Some notification text" andIconResId:@"The id of your icon resource"];
-    });
+        dispatch_queue_t backgroundOperationQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0);
+        dispatch_async(operationQueue, ^{
+            [[NabuManager sharedNabuManager] sendNotificationWithMessage:@"Some notification text" andIconResId:@"The id of your icon resource"];
+        });
 */
 
 #import <UIKit/UIKit.h>
