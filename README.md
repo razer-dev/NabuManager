@@ -7,7 +7,7 @@ NabuManager is a very useful class that makes the communication with both Nabu a
 1. Register your app in the Dev Hub from http://developer.razerzone.com/nabu/ It will have to be approved to get an App Id
 2. Follow the steps listed here: http://developer.razerzone.com/nabu/guides/develop-ios/ to set up your Xcode project
 3. Create an URL scheme callback in the "URL Types" section from your Info.plist (this is the way your app communicates with the Nabu Utility)
-4. Just copy and paste the following code in the AppDelegate.m file (this way you override the following method to handle the way you app opens URLs)
+4. Import NabuManager.h in either AppDelegate.h or AppDelegate.m and after that, just copy and paste the following code in the AppDelegate.m file (this way you override the following method to handle the way you app opens URLs)
 
   ```objective-c
   - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
@@ -17,12 +17,7 @@ NabuManager is a very useful class that makes the communication with both Nabu a
   }
   ```
 
-5. Import the NabuManager.h in your ViewController
-
-  ```objective-c
-  #import "NabuManager.h"
-  ```
-
+5. Import NabuManager.h in your ViewController class
 6. You now have all the Nabu's features at your fingertips with just one class. NabuManager is a singleton, only one instance lives at a time, so you can access it's public methods this way:
 
   ```objective-c
