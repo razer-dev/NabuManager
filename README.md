@@ -1,6 +1,8 @@
 # NabuManager
 NabuManager is a very useful class that makes the communication with both Nabu and Nabu X so easy and simple, but yet so powerful
 
+[![License](http://img.shields.io/badge/license-MIT-green.svg?style=flat)](https://github.com/razer-dev/NabuManager/blob/master/LICENSE)
+
 <br></br>
 ## How to implement NabuManager in your app
 
