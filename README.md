@@ -4,6 +4,15 @@ NabuManager is a very useful class that makes the communication with both Nabu a
 [![License](http://img.shields.io/badge/license-MIT-green.svg?style=flat)](https://github.com/razer-dev/NabuManager/blob/master/LICENSE)
 
 <br></br>
+## Features
+
+**NabuManager** is:
+
+  * simple and elegant to use
+  * very powerful, giving access to all features with just one or two lines of code
+  * well documentated
+  * designed as a singleton, being very easy to use just out of the box
+
 ## How to implement NabuManager in your app
 
 1. Register your app in the Dev Hub from http://developer.razerzone.com/nabu/ It will have to be approved to get an App Id
