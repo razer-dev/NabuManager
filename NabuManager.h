@@ -5,7 +5,7 @@
 //  Created by Cătălin Crăciun on 16/03/15.
 //  Copyright (c) 2015 Cătălin Crăciun. All rights reserved.
 //
-//  Version 1.0.0
+//  Version 1.1.0
 
 
 /*

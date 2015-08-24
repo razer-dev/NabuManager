@@ -5,7 +5,7 @@
 //  Created by Cătălin Crăciun on 16/03/15.
 //  Copyright (c) 2015 Cătălin Crăciun. All rights reserved.
 //
-//  Version 1.0.0
+//  Version 1.1.0
 
 #import "NabuManager.h"
 
@@ -85,8 +85,10 @@ static NabuManager *_nabuManager = Nil;
     __block bool authenticationSucceded = false;
     dispatch_semaphore_t finishedOperation = dispatch_semaphore_create(0);
     
-    [[NabuDataManager sharedDataManager] checkAppAuthorizedWithBlock:^(NSDictionary *callback) {
-        authenticationSucceded = [callback objectForKey:@"Operation-Status"];
+    [[NabuDataManager sharedDataManager] checkAppAuthorizationStatusWithCompletion:^(AuthenticationStatus status, NSError *error) {
+        if (status == kAuthenticationStatusSuccess) {
+            authenticationSucceded = true;
+        }
         dispatch_semaphore_signal(finishedOperation);
     }];
     
@@ -101,13 +103,15 @@ static NabuManager *_nabuManager = Nil;
     __block BOOL authenticated = false;
     dispatch_semaphore_t finishedOperation = dispatch_semaphore_create(0);
     
-    [[NabuDataManager sharedDataManager] checkAppAuthorizedWithBlock:^(NSDictionary *callback) {
-        NSString *authenticationResponse = [NSString stringWithFormat:@"%@",[callback objectForKey:@"Operation-Status"]];
-
-        if ([authenticationResponse integerValue] == kOperationSuccess) {
-            authenticated = true;
-        } else if ([authenticationResponse integerValue] == kOperationPermissionDenied) {
-            NSLog(@"* NabuManager error: The operation has not been permitted!");
+    [[NabuDataManager sharedDataManager] checkAppAuthorizationStatusWithCompletion:^(AuthenticationStatus status, NSError *error) {
+        if (error == nil) {
+            if (status == kAuthenticationStatusSuccess) {
+                authenticated = true;
+            } else if (status == kAuthenticationStatusPermissionDeined) {
+                NSLog(@"* NabuManager error: The operation has not been permitted");
+            }
+        } else {
+            NSLog(@"* NabuManager error: %@", error);
         }
         
         dispatch_semaphore_signal(finishedOperation);
@@ -122,16 +126,7 @@ static NabuManager *_nabuManager = Nil;
 #pragma mark Notifications
 - (void)sendNotificationWithMessage:(NSString *)message andIconResId:(NSString *)iconResId {
     
-    NabuNotification *notification = [[NabuNotification alloc] init];
-    notification.message = message;
-    notification.iconResId = iconResId;
-    
-    [[NabuDataManager sharedDataManager] sendNotificationToBand:notification withBlock:^(NSDictionary *callback) {
-        bool notificationSucceeded = [callback objectForKey:@"Operation-Status"];
-        if (!notificationSucceeded) {
-            NSLog(@"* NabuManager error: Something went wrong and the notifications has not been sent!");
-        }
-    }];
+    [[NabuDataManager sharedDataManager] sendNotificationWithMessage:message andIconResId:iconResId];
 }
 
 #pragma mark Fitness
@@ -139,13 +134,18 @@ static NabuManager *_nabuManager = Nil;
     __block NabuFitness *fitness = Nil;
     dispatch_semaphore_t finishedOperation = dispatch_semaphore_create(0);
     
-    [[NabuDataManager sharedDataManager] getFitnessDataWithStartTime:[NSString stringWithFormat:@"%d", (int)[startDate timeIntervalSince1970]]
-                                                             endTime:[NSString stringWithFormat:@"%d", (int)[endDate timeIntervalSince1970]]
-                                                           withBlock:^(NSDictionary *callback) {
-                                                               fitness = (NabuFitness*)[callback objectForKey:@"Fitness Data Records Retrieved"];
-                                                               dispatch_semaphore_signal(finishedOperation);
-                                                           }];
-    
+    [[NabuDataManager sharedDataManager] getFitnessDataWithStartTime:[startDate timeIntervalSince1970] endTime:[endDate timeIntervalSince1970] withCompletion:^(NSArray *arrayOfNabuFitnessData, NSError *error) {
+        if (error == nil) {
+            if (arrayOfNabuFitnessData.count > 0) {
+                fitness = (NabuFitness *)arrayOfNabuFitnessData[0];
+            }
+        } else {
+            NSLog(@"* NabuManager error: %@", error);
+        }
+        
+        dispatch_semaphore_signal(finishedOperation);
+    }];
+
     dispatch_semaphore_wait(finishedOperation, DISPATCH_TIME_FOREVER);
     finishedOperation = Nil;
     
@@ -220,12 +220,17 @@ const int secondsPerDay = 86400;
     startDate = [startDate dateByAddingTimeInterval:secondsThisDay];
     startDate = [startDate dateByAddingTimeInterval:-startDay*secondsPerDay];
     
-    [[NabuDataManager sharedDataManager] getFitnessDataWithStartTime:[NSString stringWithFormat:@"%d", (int)[startDate timeIntervalSince1970]]
-                                                             endTime:[NSString stringWithFormat:@"%d", (int)[endDate timeIntervalSince1970]]
-                                                           withBlock:^(NSDictionary *callback) {
-                                                               fitness = (NabuFitness*)[callback objectForKey:@"Fitness Data Records Retrieved"];
-                                                               dispatch_semaphore_signal(finishedOperation);
-                                                           }];
+    [[NabuDataManager sharedDataManager] getFitnessDataWithStartTime:[startDate timeIntervalSince1970] endTime:[endDate timeIntervalSince1970] withCompletion:^(NSArray *arrayOfNabuFitnessData, NSError *error) {
+        if (error == nil) {
+            if (arrayOfNabuFitnessData.count > 0) {
+                fitness = (NabuFitness *)arrayOfNabuFitnessData[0];
+            }
+        } else {
+            NSLog(@"* NabuManager error: %@", error);
+        }
+        
+        dispatch_semaphore_signal(finishedOperation);
+    }];
 
     dispatch_semaphore_wait(finishedOperation, DISPATCH_TIME_FOREVER);
     finishedOperation = Nil;
@@ -312,12 +317,17 @@ const int secondsPerDay = 86400;
     __block NabuSleepTracker *sleepTracker = Nil;
     dispatch_semaphore_t finishedOperation = dispatch_semaphore_create(0);
     
-    [[NabuDataManager sharedDataManager] getSleepHistoryDataWithStartTime:[NSString stringWithFormat:@"%d", (int)[startDate timeIntervalSince1970]]
-                                                                  endTime:[NSString stringWithFormat:@"%d", (int)[endDate timeIntervalSince1970]]
-                                                                withBlock:^(NSDictionary *callback) {
-                                                                    sleepTracker = ((NabuSleepTracker *)[callback objectForKey:@"Sleep History Data Records Retrieved"]);
-                                                                    dispatch_semaphore_signal(finishedOperation);
-                                                                }];
+    [[NabuDataManager sharedDataManager] getSleepHistoryDataWithStartTime:[startDate timeIntervalSince1970] endTime:[endDate timeIntervalSince1970] withCompletion:^(NSArray *arrayOfNabuSleepHistoryDataObjects, NSError *error) {
+        if (error == nil) {
+            if (arrayOfNabuSleepHistoryDataObjects.count > 0) {
+                sleepTracker = (NabuSleepTracker *)arrayOfNabuSleepHistoryDataObjects[0];
+            }
+        } else {
+            NSLog(@"* NabuManager error: %@", error);
+        }
+        
+        dispatch_semaphore_signal(finishedOperation);
+    }];
     
     dispatch_semaphore_wait(finishedOperation, DISPATCH_TIME_FOREVER);
     finishedOperation = Nil;
@@ -373,8 +383,8 @@ const int secondsPerDay = 86400;
     __block NabuUserProfile *profile = Nil;
     dispatch_semaphore_t finishedOperation = dispatch_semaphore_create(0);
     
-    [[NabuDataManager sharedDataManager] getUserProfileWithBlock:^(NSDictionary *callback) {
-        profile = (NabuUserProfile *)[callback objectForKey:@"Contents"];
+    [[NabuDataManager sharedDataManager] getUserProfileWithCompletion:^(NabuUserProfile *user, NSError *error) {
+        profile = user;
         dispatch_semaphore_signal(finishedOperation);
     }];
     
@@ -423,11 +433,16 @@ const int secondsPerDay = 86400;
 #pragma mark Band info
 - (NSArray *)getListOfNabus {
     
-    __block NSMutableArray *bands = [[NSMutableArray alloc] init];
+    __block NSArray *bands = nil;
     dispatch_semaphore_t finishedOperation = dispatch_semaphore_create(0);
     
-    [[NabuDataManager sharedDataManager] getBandListWithBlock:^(NSDictionary *callback) {
-        bands = (NSMutableArray *)[callback objectForKey:@"Bands"];
+    [[NabuDataManager sharedDataManager] getNabuBandListWithCompletion:^(NSArray *arrayOfNabuBands, NSError *error) {
+        if (error == nil) {
+            bands = arrayOfNabuBands;
+        } else {
+            NSLog(@"* NabuManager error: %@", error);
+        }
+        
         dispatch_semaphore_signal(finishedOperation);
     }];
     
